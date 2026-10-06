@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>우리 반 학급 시간표</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Noto Sans KR) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Noto Sans KR', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8fafc;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .today-highlight {
+            border: 3px solid #2563eb !important;
+            box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.3);
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col pb-12">
+
+    <!-- Top Header Navigation -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-blue-500/20">
+                    <i class="fa-solid fa-calendar-days"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                        우리 반 학급 시간표
+                        <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-semibold">2026학년도</span>
+                    </h1>
+                    <p class="text-xs text-slate-500">실시간 반별 일주일 시간표 및 수행평가 통합 안내</p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2.5">
+                <button onclick="openMyClassModal()" class="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs rounded-xl shadow-sm transition transform hover:scale-105">
+                    <i class="fa-solid fa-star text-yellow-200"></i>
+                    <span id="headerMyClassBtnText">우리 반 등록</span>
+                </button>
+
+                <button id="goToMyClassBtn" onclick="switchToMyClass()" class="hidden items-center gap-1 px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-xs rounded-xl border border-blue-200 transition">
+                    <i class="fa-solid fa-house text-blue-500"></i> 우리 반으로 이동
+                </button>
+
+                <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+                    <span class="text-xs font-semibold text-slate-500 px-2.5">학년:</span>
+                    <select id="gradeSelect" class="bg-white text-slate-800 text-sm font-bold rounded-lg px-3 py-1.5 border-none focus:ring-2 focus:ring-blue-500 outline-none shadow-sm cursor-pointer">
+                        <option value="1">1학년</option>
+                        <option value="2" selected>2학년</option>
+                        <option value="3">3학년</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+                    <span class="text-xs font-semibold text-slate-500 px-2.5">반:</span>
+                    <select id="classSelect" class="bg-white text-slate-800 text-sm font-bold rounded-lg px-3 py-1.5 border-none focus:ring-2 focus:ring-blue-500 outline-none shadow-sm cursor-pointer">
+                        <option value="1">1반</option>
+                        <option value="2">2반</option>
+                        <option value="3" selected>3반</option>
+                        <option value="4">4반</option>
+                        <option value="5">5반</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center bg-blue-50 p-1 rounded-xl border border-blue-200">
+                    <span class="text-xs font-semibold text-blue-700 px-2 flex items-center gap-1">
+                        <i class="fa-solid fa-clock-rotate-left"></i> 오늘 요일 설정:
+                    </span>
+                    <select id="simulatedDaySelect" class="bg-white text-blue-900 text-xs font-bold rounded-lg px-2.5 py-1.5 border border-blue-200 focus:ring-2 focus:ring-blue-500 outline-none shadow-sm cursor-pointer">
+                        <option value="auto">실제 오늘 (자동)</option>
+                        <option value="1">월요일 테스트</option>
+                        <option value="2">화요일 테스트</option>
+                        <option value="3">수요일 테스트</option>
+                        <option value="4">목요일 테스트</option>
+                        <option value="5">금요일 테스트</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-6 flex-1 w-full">
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Today Overview Card -->
+            <div class="lg:col-span-2 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white rounded-2xl p-6 shadow-lg relative overflow-hidden flex flex-col justify-between">
+                <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+
+                <div>
+                    <div class="flex justify-between items-start gap-4">
+                        <div>
+                            <div class="flex items-center gap-2 mb-2 flex-wrap">
+                                <span id="targetClassBadge" class="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-medium text-blue-100 border border-white/20">
+                                    <i class="fa-solid fa-bullhorn text-amber-300"></i>
+                                    2학년 3반 시간표
+                                </span>
+                                <span id="myClassBadgeTag" class="hidden inline-flex items-center gap-1 bg-gradient-to-r from-amber-400 to-amber-500 text-slate-900 font-extrabold text-xs px-2.5 py-0.5 rounded-full shadow-sm animate-bounce">
+                                    <i class="fa-solid fa-star text-amber-950"></i> ★ 우리 반 (MY CLASS)
+                                </span>
+                            </div>
+                            <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight flex items-center gap-3">
+                                <span id="todayTitleText">오늘의 시간표</span>
+                                <span id="todayBadge" class="bg-amber-400 text-slate-900 text-xs px-2.5 py-1 rounded-lg font-black tracking-wide uppercase shadow-sm">
+                                    TODAY
+                                </span>
+                            </h2>
+                            <p id="todayDateDetail" class="text-blue-100 text-sm mt-1 font-medium">--</p>
+                        </div>
+                        <div class="text-right bg-white/10 backdrop-blur-md px-4 py-2.5 rounded-xl border border-white/10 hidden sm:block">
+                            <span class="text-xs text-blue-200 block">현재 시각</span>
+                            <span id="currentTimeDisplay" class="text-xl font-mono font-bold">11:29 AM</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <h3 class="text-xs font-semibold text-blue-200 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                            <i class="fa-solid fa-list-check"></i> 오늘 과목 순서
+                        </h3>
+                        <div id="todayPeriodsContainer" class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
+                            <!-- Today periods injected via JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-blue-100">
+                    <span class="flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-info text-amber-300"></i>
+                        수행평가 과목은 주황색 배지로 강조되어 표시됩니다.
+                    </span>
+                    <button onclick="openPerformanceSummaryModal()" class="hover:underline font-semibold text-white flex items-center gap-1">
+                        전체 수행평가 보기 <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+                <div>
+                    <h3 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-palette text-blue-600"></i> 시간표 안내
+                    </h3>
+                    
+                    <div class="space-y-2.5 text-xs">
+                        <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3.5 h-3.5 rounded-full bg-amber-500 flex-shrink-0 animate-pulse"></span>
+                                <span class="font-bold text-amber-900">수행평가 과목</span>
+                            </div>
+                            <span class="bg-amber-200 text-amber-900 px-2 py-0.5 rounded font-extrabold text-[11px]">강조 표시</span>
+                        </div>
+
+                        <div class="p-2.5 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3.5 h-3.5 rounded-full bg-blue-600 flex-shrink-0"></span>
+                                <span class="font-bold text-blue-900">오늘 요일</span>
+                            </div>
+                            <span class="bg-blue-600 text-white px-2 py-0.5 rounded font-extrabold text-[11px]">파란색 테두리</span>
+                        </div>
+
+                        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 leading-relaxed">
+                            💡 시간표 카드를 클릭하면 상세 준비물 및 수행평가 설명 확인과 수정이 가능합니다.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <span class="text-xs text-slate-500 font-medium">수행평가 과목만 보기</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="filterPerformanceOnly" class="sr-only peer" onchange="renderTimetable()">
+                        <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                    </label>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-4 sm:p-5 border-b border-slate-200 flex flex-wrap justify-between items-center gap-3 bg-slate-50/50">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-table-cells text-blue-600"></i>
+                    <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                        <span id="weeklyClassTitle">2학년 3반</span> 주간 시간표
+                        <span id="weeklyClassMyTag" class="hidden text-xs bg-amber-100 text-amber-800 border border-amber-300 px-2 py-0.5 rounded-md font-bold">
+                            <i class="fa-solid fa-star text-amber-500"></i> 우리 반
+                        </span>
+                    </h3>
+                </div>
+
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button onclick="openEditTimetableModal()" class="px-3 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow-sm transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-pen-to-square"></i> 시간표 직접 등록/수정
+                    </button>
+                    <button onclick="window.print()" class="px-3 py-1.5 text-xs font-semibold bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg shadow-sm transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-print"></i> 인쇄
+                    </button>
+                    <button onclick="openAddEvaluationModal()" class="px-3 py-1.5 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white rounded-lg shadow-sm transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus"></i> 수행평가 등록
+                    </button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto custom-scrollbar p-3 sm:p-4">
+                <table class="w-full min-w-[720px] border-separate border-spacing-2 text-center table-fixed">
+                    <thead>
+                        <tr id="tableHeaderRow">
+                            <!-- Table Headers Injected JS -->
+                        </tr>
+                    </thead>
+                    <tbody id="tableBodyRow">
+                        <!-- Table Body Rows Injected JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Register My Class Modal -->
+    <div id="myClassModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-star text-amber-500"></i> 우리 반 등록하기
+                </h3>
+                <button onclick="closeMyClassModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-500 mb-4">
+                내가 속한 학년과 반을 설정해두면 접속 시 **우리 반 시간표**가 자동으로 로드됩니다.
+            </p>
+
+            <form id="myClassForm" onsubmit="handleMyClassSubmit(event)" class="space-y-4 text-xs">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">학년 선택</label>
+                        <select id="modalMyGradeSelect" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="1">1학년</option>
+                            <option value="2" selected>2학년</option>
+                            <option value="3">3학년</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">반 선택</label>
+                        <select id="modalMyClassSelect" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-bold focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="1">1반</option>
+                            <option value="2">2반</option>
+                            <option value="3" selected>3반</option>
+                            <option value="4">4반</option>
+                            <option value="5">5반</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">학급 슬로건</label>
+                    <input type="text" id="modalMyClassMotto" placeholder="예: 즐거운 2학년 3반" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 font-medium focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div class="pt-2 flex gap-2">
+                    <button type="button" onclick="closeMyClassModal()" class="w-1/2 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl">취소</button>
+                    <button type="submit" class="w-1/2 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-md">저장하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Subject Detail Modal -->
+    <div id="subjectModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-start border-b border-slate-100 pb-4">
+                <div class="flex items-center gap-3">
+                    <span id="modalSubjectIcon" class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg">
+                        <i class="fa-solid fa-book"></i>
+                    </span>
+                    <div>
+                        <h3 id="modalSubjectName" class="text-xl font-bold text-slate-900">과목명</h3>
+                        <p id="modalTeacherInfo" class="text-xs text-slate-500">담당 교사 및 교실</p>
+                    </div>
+                </div>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="py-4 space-y-4">
+                <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs">
+                    <span class="text-slate-500">일시:</span>
+                    <span id="modalPeriodTime" class="font-bold text-slate-800">월요일 2교시</span>
+                </div>
+
+                <div id="modalEvaluationContainer" class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 hidden">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-amber-800 flex items-center gap-1.5">
+                            <i class="fa-solid fa-pen-ruler"></i> 수행평가 정보
+                        </span>
+                        <span class="text-[11px] bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full font-bold">진행 중</span>
+                    </div>
+                    <h4 id="modalEvaluationTitle" class="font-bold text-sm text-amber-950 mb-1">제목</h4>
+                    <p id="modalEvaluationDesc" class="text-xs text-amber-800 leading-relaxed">내용</p>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-700 flex items-center gap-1">
+                        <i class="fa-solid fa-pen text-slate-400"></i> 메모 및 준비물
+                    </label>
+                    <div id="modalNotes" class="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200 min-h-[60px]">
+                        교과서 및 수업 준비물 확인.
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-2 flex gap-2">
+                <button onclick="openSinglePeriodEditFromModal()" class="w-1/2 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-xl text-xs transition flex items-center justify-center gap-1">
+                    <i class="fa-solid fa-pen-to-square"></i> 이 교시 수정
+                </button>
+                <button onclick="closeModal()" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+                    닫기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Timetable Direct Modal -->
+    <div id="editTimetableModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-100 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4 flex-shrink-0">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-blue-600"></i> 
+                        <span id="editModalClassTitle">2학년 3반</span> 시간표 직접 등록/수정
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">요일 선택 후 1~7교시 과목 정보를 입력하세요.</p>
+                </div>
+                <button onclick="closeEditTimetableModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl mb-4 flex-shrink-0">
+                <button type="button" onclick="selectEditDay(1)" id="editDayBtn-1" class="flex-1 py-1.5 text-xs font-bold rounded-lg transition bg-white text-blue-600 shadow-sm">월요일</button>
+                <button type="button" onclick="selectEditDay(2)" id="editDayBtn-2" class="flex-1 py-1.5 text-xs font-bold rounded-lg transition text-slate-600">화요일</button>
+                <button type="button" onclick="selectEditDay(3)" id="editDayBtn-3" class="flex-1 py-1.5 text-xs font-bold rounded-lg transition text-slate-600">수요일</button>
+                <button type="button" onclick="selectEditDay(4)" id="editDayBtn-4" class="flex-1 py-1.5 text-xs font-bold rounded-lg transition text-slate-600">목요일</button>
+                <button type="button" onclick="selectEditDay(5)" id="editDayBtn-5" class="flex-1 py-1.5 text-xs font-bold rounded-lg transition text-slate-600">금요일</button>
+            </div>
+
+            <div class="mb-3 p-2 bg-blue-50/60 rounded-xl border border-blue-100 flex flex-wrap items-center gap-1 text-[11px] flex-shrink-0">
+                <span class="font-bold text-blue-800 mr-1"><i class="fa-solid fa-bolt"></i> 빠른 과목 입력:</span>
+                <button type="button" onclick="applySubjectTag('국어')" class="px-2 py-0.5 bg-white border border-blue-200 rounded text-slate-700 font-medium">국어</button>
+                <button type="button" onclick="applySubjectTag('수학')" class="px-2 py-0.5 bg-white border border-blue-200 rounded text-slate-700 font-medium">수학</button>
+                <button type="button" onclick="applySubjectTag('영어')" class="px-2 py-0.5 bg-white border border-blue-200 rounded text-slate-700 font-medium">영어</button>
+                <button type="button" onclick="applySubjectTag('과학')" class="px-2 py-0.5 bg-white border border-blue-200 rounded text-slate-700 font-medium">과학</button>
+                <button type="button" onclick="applySubjectTag('사회')" class="px-2 py-0.5 bg-white border border-blue-200 rounded text-slate-700 font-medium">사회</button>
+                <button type="button" onclick="applySubjectTag('체육')" class="px-2 py-0.5 bg-white border border-blue-200 rounded text-slate-700 font-medium">체육</button>
+                <button type="button" onclick="applySubjectTag('음악')" class="px-2 py-0.5 bg-white border border-blue-200 rounded text-slate-700 font-medium">음악</button>
+                <button type="button" onclick="applySubjectTag('미술')" class="px-2 py-0.5 bg-white border border-blue-200 rounded text-slate-700 font-medium">미술</button>
+            </div>
+
+            <form id="editTimetableForm" onsubmit="handleTimetableSave(event)" class="overflow-y-auto custom-scrollbar pr-1 flex-1 space-y-2.5">
+                <div id="periodsFormContainer">
+                    <!-- Dynamic period rows injected via JS -->
+                </div>
+
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-between gap-2 flex-shrink-0">
+                    <button type="button" onclick="resetCurrentClassTimetable()" class="px-3 py-2 text-xs font-semibold text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl transition">
+                        기본 시간표로 초기화
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="closeEditTimetableModal()" class="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl text-xs">
+                            취소
+                        </button>
+                        <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs shadow-md">
+                            저장하기
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Evaluation Modal -->
+    <div id="addEvaluationModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle text-amber-500"></i> 수행평가 과목 등록
+                </h3>
+                <button onclick="closeAddEvaluationModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <form id="evaluationForm" onsubmit="handleEvaluationSubmit(event)" class="space-y-3.5 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">요일 및 교시 선택</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <select id="evalDaySelect" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="1">월요일</option>
+                            <option value="2">화요일</option>
+                            <option value="3">수요일</option>
+                            <option value="4">목요일</option>
+                            <option value="5">금요일</option>
+                        </select>
+                        <select id="evalPeriodSelect" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 font-medium focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="1">1교시</option>
+                            <option value="2">2교시</option>
+                            <option value="3">3교시</option>
+                            <option value="4">4교시</option>
+                            <option value="5">5교시</option>
+                            <option value="6">6교시</option>
+                            <option value="7">7교시</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">수행평가 제목</label>
+                    <input type="text" id="evalTitleInput" required placeholder="예: 수학 서술형 단원평가" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">세부 안내</label>
+                    <textarea id="evalDescInput" rows="3" placeholder="예: 교과서 45쪽 핵심 개념 제출" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 font-medium focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                </div>
+
+                <div class="pt-2 flex gap-2">
+                    <button type="button" onclick="closeAddEvaluationModal()" class="w-1/2 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl">취소</button>
+                    <button type="submit" class="w-1/2 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-md">저장하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const DAYS = [
+            { id: 1, name: "월요일", short: "월" },
+            { id: 2, name: "화요일", short: "화" },
+            { id: 3, name: "수요일", short: "수" },
+            { id: 4, name: "목요일", short: "목" },
+            { id: 5, name: "금요일", short: "금" }
+        ];
+
+        const PERIODS = [
+            { period: 1, time: "09:00 - 09:50" },
+            { period: 2, time: "10:00 - 10:50" },
+            { period: 3, time: "11:00 - 11:50" },
+            { period: 4, time: "12:00 - 12:50" },
+            { period: 5, time: "13:50 - 14:40" },
+            { period: 6, time: "14:50 - 15:40" },
+            { period: 7, time: "15:50 - 16:40" }
+        ];
+
+        const SUBJECT_STYLES = {
+            "국어": { bg: "bg-rose-50", border: "border-rose-200", text: "text-rose-900", badge: "bg-rose-100 text-rose-700", icon: "fa-book-open" },
+            "수학": { bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-900", badge: "bg-blue-100 text-blue-700", icon: "fa-calculator" },
+            "영어": { bg: "bg-indigo-50", border: "border-indigo-200", text: "text-indigo-900", badge: "bg-indigo-100 text-indigo-700", icon: "fa-language" },
+            "과학": { bg: "bg-emerald-50", border: "border-emerald-200", text: "text-emerald-900", badge: "bg-emerald-100 text-emerald-700", icon: "fa-flask" },
+            "사회": { bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-900", badge: "bg-amber-100 text-amber-700", icon: "fa-earth-americas" },
+            "역사": { bg: "bg-orange-50", border: "border-orange-200", text: "text-orange-900", badge: "bg-orange-100 text-orange-700", icon: "fa-landmark" },
+            "체육": { bg: "bg-lime-50", border: "border-lime-200", text: "text-lime-900", badge: "bg-lime-100 text-lime-700", icon: "fa-person-running" },
+            "음악": { bg: "bg-purple-50", border: "border-purple-200", text: "text-purple-900", badge: "bg-purple-100 text-purple-700", icon: "fa-music" },
+            "미술": { bg: "bg-pink-50", border: "border-pink-200", text: "text-pink-900", badge: "bg-pink-100 text-pink-700", icon: "fa-palette" },
+            "기술가정": { bg: "bg-teal-50", border: "border-teal-200", text: "text-teal-900", badge: "bg-teal-100 text-teal-700", icon: "fa-gear" },
+            "정보": { bg: "bg-cyan-50", border: "border-cyan-200", text: "text-cyan-900", badge: "bg-cyan-100 text-cyan-700", icon: "fa-laptop-code" },
+            "한문": { bg: "bg-stone-50", border: "border-stone-200", text: "text-stone-900", badge: "bg-stone-100 text-stone-700", icon: "fa-pen-nib" },
+            "자율": { bg: "bg-sky-50", border: "border-sky-200", text: "text-sky-900", badge: "bg-sky-100 text-sky-700", icon: "fa-users" },
+            "동아리": { bg: "bg-violet-50", border: "border-violet-200", text: "text-violet-900", badge: "bg-violet-100 text-violet-700", icon: "fa-icons" },
+            "기본": { bg: "bg-slate-50", border: "border-slate-200", text: "text-slate-800", badge: "bg-slate-100 text-slate-600", icon: "fa-graduation-cap" }
+        };
+
+        const TIMETABLE_DATABASE = {
+            "2-3": {
+                "1-1": { subject: "국어", teacher: "김국어 선생님", room: "2-3 교실", eval: { active: true, title: "시 표현 기법 수행평가", desc: "시 구절 분석 서술형 평가 제출" } },
+                "1-2": { subject: "수학", teacher: "이수학 선생님", room: "2-3 교실", eval: null },
+                "1-3": { subject: "영어", teacher: "박영어 선생님", room: "영어 전용실", eval: null },
+                "1-4": { subject: "과학", teacher: "최과학 선생님", room: "3층 과학실", eval: { active: true, title: "실험 보고서 발표", desc: "화학 반응속도 실험 결과 제출" } },
+                "1-5": { subject: "체육", teacher: "정체육 선생님", room: "체육관", eval: null },
+                "1-6": { subject: "사회", teacher: "강사회 선생님", room: "2-3 교실", eval: null },
+                "1-7": { subject: "자율", teacher: "담임 선생님", room: "2-3 교실", eval: null },
+
+                "2-1": { subject: "수학", teacher: "이수학 선생님", room: "2-3 교실", eval: null },
+                "2-2": { subject: "역사", teacher: "윤역사 선생님", room: "2-3 교실", eval: null },
+                "2-3": { subject: "국어", teacher: "김국어 선생님", room: "2-3 교실", eval: null },
+                "2-4": { subject: "음악", teacher: "장음악 선생님", room: "음악실", eval: { active: true, title: "가창 실기 수행평가", desc: "자유곡 1곡 가창 평가 진행" } },
+                "2-5": { subject: "영어", teacher: "박영어 선생님", room: "영어 전용실", eval: null },
+                "2-6": { subject: "기술가정", teacher: "한기술 선생님", room: "기술실", eval: null },
+                "2-7": { subject: "정보", teacher: "송정보 선생님", room: "컴퓨터실", eval: null },
+
+                "3-1": { subject: "영어", teacher: "박영어 선생님", room: "영어 전용실", eval: null },
+                "3-2": { subject: "과학", teacher: "최과학 선생님", room: "3층 과학실", eval: null },
+                "3-3": { subject: "수학", teacher: "이수학 선생님", room: "2-3 교실", eval: { active: true, title: "이차방정식 단원평가", desc: "중단원 서술형 형성평가" } },
+                "3-4": { subject: "사회", teacher: "강사회 선생님", room: "2-3 교실", eval: null },
+                "3-5": { subject: "미술", teacher: "임미술 선생님", room: "미술실", eval: null },
+                "3-6": { subject: "미술", teacher: "임미술 선생님", room: "미술실", eval: { active: true, title: "풍경 수채화 완성", desc: "실기 작품 최종 제출" } },
+
+                "4-1": { subject: "역사", teacher: "윤역사 선생님", room: "2-3 교실", eval: null },
+                "4-2": { subject: "국어", teacher: "김국어 선생님", room: "2-3 교실", eval: null },
+                "4-3": { subject: "체육", teacher: "정체육 선생님", room: "운동장", eval: { active: true, title: "축구 패스 실기", desc: "2인 1조 패스 정확도 측정" } },
+                "4-4": { subject: "수학", teacher: "이수학 선생님", room: "2-3 교실", eval: null },
+                "4-5": { subject: "영어", teacher: "박영어 선생님", room: "영어 전용실", eval: null },
+                "4-6": { subject: "한문", teacher: "신한문 선생님", room: "2-3 교실", eval: null },
+                "4-7": { subject: "동아리", teacher: "동아리 지도교사", room: "각 활동실", eval: null },
+
+                "5-1": { subject: "과학", teacher: "최과학 선생님", room: "3층 과학실", eval: null },
+                "5-2": { subject: "기술가정", teacher: "한기술 선생님", room: "기술실", eval: null },
+                "5-3": { subject: "국어", teacher: "김국어 선생님", room: "2-3 교실", eval: null },
+                "5-4": { subject: "사회", teacher: "강사회 선생님", room: "2-3 교실", eval: { active: true, title: "지리 탐구 포스터", desc: "세계 기후 조사 보고서 제출" } },
+                "5-5": { subject: "수학", teacher: "이수학 선생님", room: "2-3 교실", eval: null },
+                "5-6": { subject: "영어", teacher: "박영어 선생님", room: "영어 전용실", eval: null },
+                "5-7": { subject: "정보", teacher: "송정보 선생님", room: "컴퓨터실", eval: null }
+            }
+        };
+
+        let currentGrade = "2";
+        let currentClass = "3";
+        let simulatedDayMode = "auto";
+        let activeEditDay = 1;
+        let activeFocusedInputId = null;
+        let activeSelectedPeriodCtx = null;
+
+        let myClassConfig = {
+            grade: "2",
+            class: "3",
+            motto: "최강 2학년 3반"
+        };
+
+        let customTimetables = {};
+
+        function loadMyClassSettings() {
+            try {
+                const saved = localStorage.getItem("my_class_config");
+                if (saved) {
+                    myClassConfig = JSON.parse(saved);
+                    currentGrade = myClassConfig.grade;
+                    currentClass = myClassConfig.class;
+                }
+
+                const savedCustom = localStorage.getItem("custom_timetables_v1");
+                if (savedCustom) {
+                    customTimetables = JSON.parse(savedCustom);
+                }
+            } catch (e) {
+                console.error("Failed to load settings", e);
+            }
+        }
+
+        function getSubjectForClass(grade, cls, day, period) {
+            const key = `${grade}-${cls}`;
+            const cellKey = `${day}-${period}`;
+
+            if (customTimetables[key] && customTimetables[key][cellKey]) {
+                return customTimetables[key][cellKey];
+            }
+
+            if (TIMETABLE_DATABASE[key] && TIMETABLE_DATABASE[key][cellKey]) {
+                return TIMETABLE_DATABASE[key][cellKey];
+            }
+
+            const defaultSubjects = ["국어", "수학", "영어", "과학", "사회", "역사", "체육", "음악", "미술", "기술가정", "정보"];
+            const index = (grade * 3 + cls * 5 + day * 7 + period * 11) % defaultSubjects.length;
+            const subj = defaultSubjects[index];
+            const hasEval = (day + period + cls) % 5 === 0;
+
+            return {
+                subject: subj,
+                teacher: `${subj} 담당교사`,
+                room: `${grade}-${cls} 교실`,
+                eval: hasEval ? {
+                    active: true,
+                    title: `${subj} 수행평가 과제`,
+                    desc: `${subj} 핵심 개념 서술형 작성`
+                } : null
+            };
+        }
+
+        function getTodayDayId() {
+            if (simulatedDayMode !== "auto") {
+                return parseInt(simulatedDayMode);
+            }
+            const day = new Date().getDay();
+            if (day >= 1 && day <= 5) return day;
+            return 1;
+        }
+
+        function renderTimetable() {
+            const todayId = getTodayDayId();
+            const isMyClass = (currentGrade === myClassConfig.grade && currentClass === myClassConfig.class);
+            const isPerfOnly = document.getElementById("filterPerformanceOnly")?.checked || false;
+
+            document.getElementById("targetClassBadge").innerText = `${currentGrade}학년 ${currentClass}반 시간표`;
+            document.getElementById("weeklyClassTitle").innerText = `${currentGrade}학년 ${currentClass}반`;
+            document.getElementById("editModalClassTitle").innerText = `${currentGrade}학년 ${currentClass}반`;
+            
+            const myClassBadgeTag = document.getElementById("myClassBadgeTag");
+            const weeklyClassMyTag = document.getElementById("weeklyClassMyTag");
+            const goToMyClassBtn = document.getElementById("goToMyClassBtn");
+            const headerMyClassBtnText = document.getElementById("headerMyClassBtnText");
+
+            if (headerMyClassBtnText) {
+                headerMyClassBtnText.innerText = myClassConfig.grade ? `내 반 (${myClassConfig.grade}-${myClassConfig.class})` : "우리 반 등록";
+            }
+
+            if (isMyClass) {
+                myClassBadgeTag.classList.remove("hidden");
+                weeklyClassMyTag.classList.remove("hidden");
+                goToMyClassBtn.classList.add("hidden");
+            } else {
+                myClassBadgeTag.classList.add("hidden");
+                weeklyClassMyTag.classList.add("hidden");
+                goToMyClassBtn.classList.remove("hidden");
+                goToMyClassBtn.classList.add("flex");
+            }
+
+            const todayObj = DAYS.find(d => d.id === todayId);
+            const dateOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+            const todayDateStr = new Date().toLocaleDateString('ko-KR', dateOptions);
+            document.getElementById("todayTitleText").innerText = `오늘의 시간표 (${todayObj.name})`;
+            document.getElementById("todayDateDetail").innerText = `${todayDateStr} ${todayObj.name}${simulatedDayMode !== 'auto' ? ' (테스트 설정 모드)' : ''}`;
+
+            // Render Today's Period Bar
+            const todayPeriodsContainer = document.getElementById("todayPeriodsContainer");
+            todayPeriodsContainer.innerHTML = "";
+
+            PERIODS.forEach(p => {
+                const item = getSubjectForClass(currentGrade, currentClass, todayId, p.period);
+                const hasEval = item.eval && item.eval.active;
+
+                const card = document.createElement("div");
+                card.onclick = () => openSubjectModal(currentGrade, currentClass, todayId, p.period);
+                card.className = `p-2 rounded-xl border text-center cursor-pointer transition transform hover:-translate-y-0.5 shadow-sm relative overflow-hidden ${
+                    hasEval ? 'bg-amber-400 border-amber-300 text-slate-900 font-extrabold' : 'bg-white/15 border-white/20 text-white hover:bg-white/25'
+                }`;
+
+                card.innerHTML = `
+                    <div class="text-[10px] opacity-80 font-medium">${p.period}교시</div>
+                    <div class="text-xs font-bold truncate mt-0.5">${item.subject || '-'}</div>
+                    ${hasEval ? '<span class="absolute top-0.5 right-0.5 w-2 h-2 bg-rose-500 rounded-full animate-ping"></span>' : ''}
+                `;
+                todayPeriodsContainer.appendChild(card);
+            });
+
+            // Render Table Header
+            const tableHeaderRow = document.getElementById("tableHeaderRow");
+            tableHeaderRow.innerHTML = `
+                <th class="p-3 bg-slate-100/80 rounded-xl text-xs font-bold text-slate-600 w-24">교시 / 시간</th>
+            `;
+
+            DAYS.forEach(day => {
+                const isToday = (day.id === todayId);
+                const th = document.createElement("th");
+                th.className = `p-3 text-sm font-bold rounded-xl transition-all ${
+                    isToday 
+                        ? 'bg-blue-600 text-white shadow-md today-highlight' 
+                        : 'bg-slate-100 text-slate-700'
+                }`;
+                th.innerHTML = `
+                    <div class="flex items-center justify-center gap-1">
+                        <span>${day.name}</span>
+                        ${isToday ? '<span class="text-[10px] bg-amber-400 text-slate-900 px-1.5 py-0.2 rounded font-black">TODAY</span>' : ''}
+                    </div>
+                `;
+                tableHeaderRow.appendChild(th);
+            });
+
+            // Render Table Body
+            const tableBodyRow = document.getElementById("tableBodyRow");
+            tableBodyRow.innerHTML = "";
+
+            PERIODS.forEach(p => {
+                const tr = document.createElement("tr");
+
+                const periodTd = document.createElement("td");
+                periodTd.className = "p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-center";
+                periodTd.innerHTML = `
+                    <div class="text-xs font-extrabold text-blue-700">${p.period}교시</div>
+                    <div class="text-[10px] text-slate-400 font-mono mt-0.5">${p.time}</div>
+                `;
+                tr.appendChild(periodTd);
+
+                DAYS.forEach(day => {
+                    const isToday = (day.id === todayId);
+                    const item = getSubjectForClass(currentGrade, currentClass, day.id, p.period);
+                    const style = SUBJECT_STYLES[item.subject] || SUBJECT_STYLES["기본"];
+                    const hasEval = item.eval && item.eval.active;
+
+                    const td = document.createElement("td");
+                    const isFilteredOut = isPerfOnly && !hasEval;
+
+                    td.className = `p-2.5 rounded-xl border transition-all duration-200 text-left cursor-pointer relative overflow-hidden ${
+                        isToday ? 'border-blue-500 shadow-sm bg-blue-50/40' : style.border
+                    } ${isFilteredOut ? 'opacity-25 grayscale' : style.bg} hover:shadow-md hover:scale-[1.01]`;
+
+                    td.onclick = () => openSubjectModal(currentGrade, currentClass, day.id, p.period);
+
+                    td.innerHTML = `
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md ${style.badge}">
+                                <i class="fa-solid ${style.icon} text-[10px]"></i>
+                                ${item.subject || '미정'}
+                            </span>
+                            ${hasEval ? `
+                                <span class="inline-flex items-center gap-0.5 bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black animate-pulse shadow-sm">
+                                    <i class="fa-solid fa-pen-ruler text-[9px]"></i> 수행
+                                </span>
+                            ` : ''}
+                        </div>
+                        <div class="text-xs font-semibold text-slate-800 truncate">${item.teacher || ''}</div>
+                        <div class="text-[10px] text-slate-500 truncate mt-0.5">${item.room || ''}</div>
+                    `;
+
+                    tr.appendChild(td);
+                });
+
+                tableBodyRow.appendChild(tr);
+            });
+        }
+
+        function openMyClassModal() {
+            document.getElementById("modalMyGradeSelect").value = myClassConfig.grade || "2";
+            document.getElementById("modalMyClassSelect").value = myClassConfig.class || "3";
+            document.getElementById("modalMyClassMotto").value = myClassConfig.motto || "";
+            document.getElementById("myClassModal").classList.remove("hidden");
+        }
+
+        function closeMyClassModal() {
+            document.getElementById("myClassModal").classList.add("hidden");
+        }
+
+        function handleMyClassSubmit(e) {
+            e.preventDefault();
+            myClassConfig.grade = document.getElementById("modalMyGradeSelect").value;
+            myClassConfig.class = document.getElementById("modalMyClassSelect").value;
+            myClassConfig.motto = document.getElementById("modalMyClassMotto").value.trim();
+
+            try {
+                localStorage.setItem("my_class_config", JSON.stringify(myClassConfig));
+            } catch (err) {
+                console.error("Failed to save config", err);
+            }
+
+            currentGrade = myClassConfig.grade;
+            currentClass = myClassConfig.class;
+
+            document.getElementById("gradeSelect").value = currentGrade;
+            document.getElementById("classSelect").value = currentClass;
+
+            closeMyClassModal();
+            renderTimetable();
+        }
+
+        function switchToMyClass() {
+            if (myClassConfig.grade && myClassConfig.class) {
+                currentGrade = myClassConfig.grade;
+                currentClass = myClassConfig.class;
+                document.getElementById("gradeSelect").value = currentGrade;
+                document.getElementById("classSelect").value = currentClass;
+                renderTimetable();
+            } else {
+                openMyClassModal();
+            }
+        }
+
+        function openEditTimetableModal() {
+            document.getElementById("editModalClassTitle").innerText = `${currentGrade}학년 ${currentClass}반`;
+            selectEditDay(1);
+            document.getElementById("editTimetableModal").classList.remove("hidden");
+        }
+
+        function closeEditTimetableModal() {
+            document.getElementById("editTimetableModal").classList.add("hidden");
+        }
+
+        function selectEditDay(dayId) {
+            activeEditDay = dayId;
+            for (let i = 1; i <= 5; i++) {
+                const btn = document.getElementById(`editDayBtn-${i}`);
+                if (i === dayId) {
+                    btn.className = "flex-1 py-1.5 text-xs font-bold rounded-lg transition bg-white text-blue-600 shadow-sm";
+                } else {
+                    btn.className = "flex-1 py-1.5 text-xs font-bold rounded-lg transition text-slate-600 hover:text-slate-900";
+                }
+            }
+            renderEditFormForDay(dayId);
+        }
+
+        function renderEditFormForDay(dayId) {
+            const container = document.getElementById("periodsFormContainer");
+            container.innerHTML = "";
+
+            PERIODS.forEach(p => {
+                const item = getSubjectForClass(currentGrade, currentClass, dayId, p.period);
+
+                const row = document.createElement("div");
+                row.className = "p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-xs";
+                row.innerHTML = `
+                    <div class="flex items-center justify-between font-bold text-slate-800 border-b border-slate-200/60 pb-1.5">
+                        <span class="flex items-center gap-1.5 text-blue-700">
+                            <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[11px] font-extrabold">${p.period}</span>
+                            <span>${p.period}교시</span>
+                        </span>
+                        <span class="text-[10px] text-slate-400 font-mono">${p.time}</span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">과목명</label>
+                            <input type="text" id="editSubjectP${p.period}" value="${item.subject || ''}" placeholder="예: 국어" 
+                                onfocus="activeFocusedInputId = 'editSubjectP${p.period}'"
+                                class="w-full bg-white border border-slate-300 rounded-lg p-2 font-bold focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">담당 교사</label>
+                            <input type="text" id="editTeacherP${p.period}" value="${item.teacher || ''}" placeholder="예: 김국어 선생님" 
+                                class="w-full bg-white border border-slate-300 rounded-lg p-2 font-medium focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-0.5">교실 위치</label>
+                            <input type="text" id="editRoomP${p.period}" value="${item.room || ''}" placeholder="예: 2-3 교실" 
+                                class="w-full bg-white border border-slate-300 rounded-lg p-2 font-medium focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function applySubjectTag(subjectName) {
+            if (!activeFocusedInputId) {
+                activeFocusedInputId = "editSubjectP1";
+            }
+            const inputEl = document.getElementById(activeFocusedInputId);
+            if (inputEl) {
+                inputEl.value = subjectName;
+            }
+        }
+
+        function handleTimetableSave(e) {
+            e.preventDefault();
+            const key = `${currentGrade}-${currentClass}`;
+
+            if (!customTimetables[key]) {
+                customTimetables[key] = {};
+            }
+
+            PERIODS.forEach(p => {
+                const cellKey = `${activeEditDay}-${p.period}`;
+                const subjVal = document.getElementById(`editSubjectP${p.period}`).value.trim();
+                const teacherVal = document.getElementById(`editTeacherP${p.period}`).value.trim();
+                const roomVal = document.getElementById(`editRoomP${p.period}`).value.trim();
+
+                const existing = getSubjectForClass(currentGrade, currentClass, activeEditDay, p.period);
+
+                if (subjVal) {
+                    customTimetables[key][cellKey] = {
+                        subject: subjVal,
+                        teacher: teacherVal || `${subjVal} 선생님`,
+                        room: roomVal || `${currentGrade}-${currentClass} 교실`,
+                        eval: existing ? existing.eval : null
+                    };
+                }
+            });
+
+            try {
+                localStorage.setItem("custom_timetables_v1", JSON.stringify(customTimetables));
+            } catch (err) {
+                console.error("Failed to save custom timetables", err);
+            }
+
+            renderTimetable();
+            closeEditTimetableModal();
+        }
+
+        function resetCurrentClassTimetable() {
+            const key = `${currentGrade}-${currentClass}`;
+            if (customTimetables[key]) {
+                delete customTimetables[key];
+                try {
+                    localStorage.setItem("custom_timetables_v1", JSON.stringify(customTimetables));
+                } catch (err) {
+                    console.error("Failed to reset storage", err);
+                }
+            }
+            renderEditFormForDay(activeEditDay);
+            renderTimetable();
+        }
+
+        function openSinglePeriodEditFromModal() {
+            if (!activeSelectedPeriodCtx) return;
+            closeModal();
+            openEditTimetableModal();
+            selectEditDay(activeSelectedPeriodCtx.dayId);
+            activeFocusedInputId = `editSubjectP${activeSelectedPeriodCtx.periodNum}`;
+            const targetInput = document.getElementById(activeFocusedInputId);
+            if (targetInput) {
+                targetInput.focus();
+            }
+        }
+
+        function openSubjectModal(grade, cls, dayId, periodNum) {
+            activeSelectedPeriodCtx = { grade, cls, dayId, periodNum };
+            const item = getSubjectForClass(grade, cls, dayId, periodNum);
+            const dayObj = DAYS.find(d => d.id === dayId);
+            const periodObj = PERIODS.find(p => p.period === periodNum);
+
+            document.getElementById("modalSubjectName").innerText = item.subject || "과목 미지정";
+            document.getElementById("modalTeacherInfo").innerText = `${item.teacher || '미정'} | ${item.room || '교실 미지정'}`;
+            document.getElementById("modalPeriodTime").innerText = `${dayObj.name} ${periodNum}교시 (${periodObj.time})`;
+
+            const evalBox = document.getElementById("modalEvaluationContainer");
+            if (item.eval && item.eval.active) {
+                evalBox.classList.remove("hidden");
+                document.getElementById("modalEvaluationTitle").innerText = item.eval.title;
+                document.getElementById("modalEvaluationDesc").innerText = item.eval.desc;
+            } else {
+                evalBox.classList.add("hidden");
+            }
+
+            document.getElementById("modalNotes").innerText = `${item.subject} 준비물을 확인해 주시고 수행과제를 점검해 주세요.`;
+            document.getElementById("subjectModal").classList.remove("hidden");
+        }
+
+        function closeModal() {
+            document.getElementById("subjectModal").classList.add("hidden");
+        }
+
+        function openAddEvaluationModal() {
+            document.getElementById("addEvaluationModal").classList.remove("hidden");
+        }
+
+        function closeAddEvaluationModal() {
+            document.getElementById("addEvaluationModal").classList.add("hidden");
+        }
+
+        function openPerformanceSummaryModal() {
+            openAddEvaluationModal();
+        }
+
+        function handleEvaluationSubmit(e) {
+            e.preventDefault();
+            const day = parseInt(document.getElementById("evalDaySelect").value);
+            const period = parseInt(document.getElementById("evalPeriodSelect").value);
+            const title = document.getElementById("evalTitleInput").value;
+            const desc = document.getElementById("evalDescInput").value;
+
+            const key = `${currentGrade}-${currentClass}`;
+            const cellKey = `${day}-${period}`;
+
+            if (!customTimetables[key]) {
+                customTimetables[key] = {};
+            }
+
+            const currentObj = getSubjectForClass(currentGrade, currentClass, day, period);
+            customTimetables[key][cellKey] = {
+                ...currentObj,
+                eval: {
+                    active: true,
+                    title: title,
+                    desc: desc
+                }
+            };
+
+            try {
+                localStorage.setItem("custom_timetables_v1", JSON.stringify(customTimetables));
+            } catch (err) {
+                console.error("Failed to save evaluation", err);
+            }
+
+            closeAddEvaluationModal();
+            renderTimetable();
+            
+            document.getElementById("evalTitleInput").value = "";
+            document.getElementById("evalDescInput").value = "";
+        }
+
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            const clockEl = document.getElementById("currentTimeDisplay");
+            if (clockEl) {
+                clockEl.innerText = `${hours}:${minutes} ${ampm}`;
+            }
+        }
+
+        window.onload = function() {
+            loadMyClassSettings();
+
+            document.getElementById("gradeSelect").value = currentGrade;
+            document.getElementById("classSelect").value = currentClass;
+
+            document.getElementById("gradeSelect").addEventListener("change", (e) => {
+                currentGrade = e.target.value;
+                renderTimetable();
+            });
+
+            document.getElementById("classSelect").addEventListener("change", (e) => {
+                currentClass = e.target.value;
+                renderTimetable();
+            });
+
+            document.getElementById("simulatedDaySelect").addEventListener("change", (e) => {
+                simulatedDayMode = e.target.value;
+                renderTimetable();
+            });
+
+            renderTimetable();
+            updateClock();
+            setInterval(updateClock, 10000);
+        };
+    </script>
+</body>
+</html>
